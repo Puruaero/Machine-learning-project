@@ -64,4 +64,4 @@ train <- training[complete.cases(training), ]
 ctrl <- trainControl(method="repeatedcv", repeats=3) #,classProbs=TRUE,summaryFunction = twoClassSummary)
 gbmFit <- train(interesting ~ ., data = train, trctrl= ctrl, method = "knn", tuneLength = 5)
 print(gbmFit)
-# write.csv(train, "chutiya.csv")
+# write.csv(train, "c.csv")
