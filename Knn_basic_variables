@@ -1,5 +1,3 @@
-# Stats-project
-The project in Statistical Learning
 library(lubridate)
 library(mice)
 library(MASS)
@@ -39,8 +37,8 @@ training$enjoy <- ordered(training$enjoy, levels=c("1", "2", "3", "4", "5"))
 # training$duration[is.na(training$duration)] <- round(mean(training$duration,na.rm = TRUE))
 # training$enjoy[is.na(training$enjoy)] <- round(mean(training$enjoy,na.rm = TRUE))
 
-# training$core <- factor(training$core, levels=c(levels(training$core), "leisure"))
-# training$core[is.na(training$core)] = "leisure"
+training$core <- factor(training$core, levels=c(levels(training$core), "leisure"))
+training$core[is.na(training$core)] = "leisure"
 
 training$obs <- NULL
 training$train <- NULL
@@ -50,18 +48,18 @@ training$starttime <- NULL
 training$endtime <- NULL
 training$id <- NULL
 training$year_month_m <- NULL
-training$core <- NULL
+# training$core <- NULL
 # training$endday[is.na(training$endday)] <- training$startday[is.na(training$endday)]
 
 # training$startsec[is.na(training$startsec)] <- round(mean(training$startsec,na.rm = TRUE))
 
 # x=round(mean(training$startsec,na.rm = TRUE))
-train <- training[complete.cases(training), ]
+# train <- training[complete.cases(training), ]
 
 # trainX <- training[,names(training) != "interesting"]
 # preProcValues <- preProcess(x = trainX,method = c("center", "scale"))
 
-ctrl <- trainControl(method="repeatedcv", repeats=3) #,classProbs=TRUE,summaryFunction = twoClassSummary)
-gbmFit <- train(interesting ~ ., data = train, trctrl= ctrl, method = "knn", tuneLength = 5)
+ctrl <- trainControl(method="cv") #,classProbs=TRUE,summaryFunction = twoClassSummary)
+gbmFit <- train(interesting ~ ., data = training, method = "knn", tuneLength = 1)
 print(gbmFit)
 # write.csv(train, "c.csv")
