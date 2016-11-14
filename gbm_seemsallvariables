@@ -1,0 +1,83 @@
+library(lubridate)
+library(mice)
+library(MASS)
+# library(randomForest)
+library(plyr)
+# library(class)
+library(caret)
+
+start.time <- Sys.time()
+training <- read.csv("combined.csv",na.strings=c(""," ","NA"))
+info <- read.csv("avars1.csv",na.strings=c(""," ","NA"))
+training <- merge(training, info, by.x="id", by.y="id", sort=TRUE)
+IDs <- split( training , f = training$id )
+
+start.time <- Sys.time()
+training$startsec<-period_to_seconds(hms(training$starttime))
+training$endsec<-period_to_seconds(hms(training$endtime))
+
+training$startday<-mday(dmy(training$startdate))
+training$endday<-mday(dmy(training$enddate))
+
+training$month<-month(dmy(training$startdate))
+training$year<-year(dmy(training$startdate))
+
+training$core = factor(training$core, levels=c(levels(training$core), "leisure"))
+training$core[is.na(training$core)] = "leisure"
+training$interesting<-as.ordered(training$interesting)
+
+training$duration[is.na(training$duration)] <- round(mean(training$duration,na.rm = TRUE))
+training$enjoy[is.na(training$enjoy)] <- round(mean(training$enjoy,na.rm = TRUE))
+
+training$endday[is.na(training$endday)] <- training$startday[is.na(training$endday)]
+
+training$startsec[is.na(training$startsec)] <- round(mean(training$startsec,na.rm = TRUE))
+x=round(mean(training$startsec,na.rm = TRUE))
+
+training$endsec[is.na(training$endsec)] <- training$startsec[is.na(training$endsec)]+training$duration[is.na(training$endsec)]
+
+training=training[-11]
+training=training[-10]
+training=training[-9]
+training=training[-8]
+
+
+
+
+IDs <- split( training , f = training$id )
+
+
+clear1<-data.frame( sapply( IDs , function(x) round(mean( x$clear )) ))
+clear1<-setNames(cbind(rownames(clear1), clear1, row.names = NULL), c("id", "clearm"))
+training <- merge(training, clear1, by.x="id", by.y="id", sort=FALSE)
+
+
+difficult1<-data.frame( sapply( IDs , function(x) round(mean( x$difficult ) )))
+difficult1<-setNames(cbind(rownames(difficult1), difficult1, row.names = NULL), c("id", "difficultm"))
+training <- merge(training, difficult1, by.x="id", by.y="id", sort=FALSE)
+
+
+interesting1<-data.frame( sapply( IDs , function(x) round(mean( as.integer(x$interesting)) ) ))
+interesting1<-setNames(cbind(rownames(interesting1), interesting1, row.names = NULL), c("id", "interestingm"))
+training <- merge(training, interesting1, by.x="id", by.y="id", sort=FALSE)
+
+
+thinking1<-data.frame( sapply( IDs , function(x) round(mean( x$thinking ) )))
+thinking1<-setNames(cbind(rownames(thinking1), thinking1, row.names = NULL), c("id", "thinkingm"))
+training <- merge(training, thinking1, by.x="id", by.y="id", sort=FALSE)
+
+
+enjoy1<-data.frame( sapply( IDs , function(x) round(mean( x$enjoy ) ) ))
+enjoy1<-setNames(cbind(rownames(enjoy1), enjoy1, row.names = NULL), c("id", "enjoym"))
+training <- merge(training, enjoy1, by.x="id", by.y="id", sort=FALSE)
+
+
+md.pattern(training)
+
+
+ctrl <- trainControl(method="cv")
+gbmFit <- train(training$interesting~ ., data = training, method = "gbm", trControl = ctrl, tuneLength = 1)
+print(gbmFit)
+
+end.time <- Sys.time()
+print(end.time - start.time)
