@@ -17,14 +17,6 @@ getmode <- function(v) {
   uniqv[which.max(tabulate(match(v, uniqv)))]
 }
 
-# getlevels <- function(variable){
-# 	lev = levels(factor(variable))
-# 	for (level in lev){
-# 	revalue(variable, c(level <- paste("X",level,""))) -> variable
-# 	# return (variable)
-# }
-# }
-
 training <- read.csv("combined.csv",na.strings=c(""," ","NA"))
 info <- read.csv("avars1.csv",na.strings=c(""," ","NA"))
 info<-data.frame(info$id,info$geslacht, info$leeftijd, info$lftdcat, info$belbezig, info$brutocat, info$oplzon, info$simpc)
@@ -253,10 +245,7 @@ training3<-training1[['TRUE']]
 
 
 ctrl <- trainControl(classProbs=TRUE)# )# classProbs=TRUE)
-# lev = levels(factor(training3$interesting))
-# for (level in lev) {
-# 	revalue(training3$interesting, c(level <- paste("X",level,""))) -> variable
-# }
+
 revalue(training3$interesting, c("1" = "X1")) -> training3$interesting
 revalue(training3$interesting, c("2" = "X2")) -> training3$interesting
 revalue(training3$interesting, c("3" = "X3")) -> training3$interesting
@@ -269,41 +258,21 @@ revalue(training2$interesting, c("3" = "X3")) -> training2$interesting
 revalue(training2$interesting, c("4" = "X4")) -> training2$interesting
 revalue(training2$interesting, c("5" = "X5")) -> training2$interesting
 
-# grid <- expand.grid(shrinkage = .2, n.trees= 10,  interaction.depth=1, n.minobsinnode=10)
-# gbmfit <- train(interesting~month+year+duration+core+startday, data = training3, method = "gbm", trControl = ctrl, tuneLength = 1, tunegrid = data.frame(shrinkage = .2, n.trees= 10,  interaction.depth=1, n.minobsinnode=10))
 gbmfit <- train(interesting~month+year+duration+core+startday, data = training3, method = "gbm", trControl = ctrl, tuneLength = 1, tuneGrid = data.frame(n.trees = 1,  interaction.depth=1, shrinkage=.2, n.minobsinnode=10))
 p11  = predict(gbmfit, newdata=test11, type='prob')
-# p11<-(p11+0.3)/((0.3*5)+1) 
 print("I am here 0")
-# write.csv(p11, file = "submission1.csv",row.names=FALSE)
-
-# revalue(training3$interesting, c("1" = "X1")) -> training3$interesting
-# revalue(training3$interesting, c("2" = "X2")) -> training3$interesting
-# revalue(training3$interesting, c("3" = "X3")) -> training3$interesting
-# revalue(training3$interesting, c("4" = "X4")) -> training3$interesting
-# revalue(training3$interesting, c("5" = "X5")) -> training3$interesting# # levels(test11$interesting) <- make.names(levels(factor(test11$interesting)))
 
 gbmfit2 <- train(interesting~month+year+ampm+startdatw+duration+core+startday+interestingm+enjoy+difficult+thinking+clear, data = training3, method = "gbm", trControl = ctrl, tuneLength = 1, tuneGrid = data.frame(n.trees = 1,  interaction.depth=1, shrinkage=.2, n.minobsinnode=10))
-# gbmfit2 <- train(interesting~month+year+ampm+startdatw+duration+core+startday+interestingm+enjoy+difficult+thinking+clear, data = training3, method = "gbm", trControl = ctrl, tuneLength = 1, tunegrid = data.frame(n.trees = 1,  interaction.depth=1, shrinkage=.2, n.minobsinnode=10))
-# gbmfit2 <- train(interesting~month+year+ampm+startdatw+duration+core+startday+interestingm+enjoy+difficult+thinking+clear, data = training3, method = "gbm", trControl = ctrl, tuneLength = 1, tuneGrid = data.frame(n.trees = 1,  interaction.depth=1, shrinkage=.2, n.minobsinnode=10))
-# gbmfit2 <- train(interesting~month+year+ampm+startdatw+duration+core+startday+interestingm+enjoy+difficult+thinking+clear, data=training3, method = "gbm", trControl = ctrl, tuneLength = 1, tunegrid= data.frame(n.trees = 1,  interaction.depth=1, shrinkage=.2, n.minobsinnode=10))
 p12=predict(gbmfit2, test12, type ="prob")
-# p12<-(p12+0.06)/((0.06*5)+1)
 print("I am here 1")
 
 gbmfit3 <- train(interesting~month+year+duration+core+startday+age+agecat+gender+educ+grosscat+simpc+occupation, data = training2, method = "gbm", trControl = ctrl, tuneLength = 1, tuneGrid = data.frame(n.trees = 1,  interaction.depth=1, shrinkage=.2, n.minobsinnode=10))
-# gbmfit3 <- train(interesting~month+duration+year+startday+core+age+agecat+gender+educ+grosscat+simpc+occupation, data=training2, method = "gbm", trControl = ctrl, tuneLength = 1, tunegrid=data.frame(n.trees = 1,  interaction.depth=1, shrinkage=.2, n.minobsinnode=10))
 p21=predict(gbmfit3, test21, type ="prob")
 print("I am here 2")
-# rf21<-randomForest( interesting ~ , data = training2, ntree= 	500, importance=TRUE)
-# 
+
 gbmfit4 <- train(interesting~month+ampm+startdatw+duration+year+startday+core+age+agecat+gender+educ+grosscat+simpc+occupation+interestingm+clear+thinking+difficult+enjoy, data=training2, method = "gbm", trControl = ctrl, tuneLength = 1, tuneGrid = data.frame(n.trees = 1,  interaction.depth=1, shrinkage=.2, n.minobsinnode=10))
 p22=predict(gbmfit4, test22, type ="prob")
-print("I am here 3")
-
-# rf22<-randomForest( interesting ~ month+ampm+startdatw+duration+year+startday+core+age+agecat+gender+educ+grosscat+simpc+occupation+interestingm+clear+thinking+difficult+enjoy, data = training2, ntree=500, importance=TRUE)
-# p22=predict(gbmfit4, test22, type ="prob")
-	
+print("I am here 3")	
 
 p11 <- data.frame(test11$obs, p11) 
 p11<-rename(p11, c("test11.obs"="obs", "X1"="interesting1", "X2"="interesting2" ,"X3"="interesting3", "X4"="interesting4", "X5"="interesting5"))
@@ -314,12 +283,9 @@ p12 <- data.frame( test12$obs, p12)
 p12<-rename(p12, c("test12.obs"="obs", "X1"="interesting1", "X2"="interesting2" ,"X3"="interesting3", "X4"="interesting4", "X5"="interesting5"))
 
 
-# p21<-(p21+0.05)/((0.05*5)+1)
 p21 <- data.frame( test21$obs, p21)
 p21<-rename(p21, c("test21.obs"="obs", "X1"="interesting1", "X2"="interesting2" ,"X3"="interesting3", "X4"="interesting4", "X5"="interesting5"))
 
-
-# p22<-(p22+0.04)/((0.04*5)+1)
 p22 <- data.frame( test22$obs, p22)
 p22<-rename(p22, c("test22.obs"="obs", "X1"="interesting1", "X2"="interesting2" ,"X3"="interesting3", "X4"="interesting4", "X5"="interesting5"))
 
